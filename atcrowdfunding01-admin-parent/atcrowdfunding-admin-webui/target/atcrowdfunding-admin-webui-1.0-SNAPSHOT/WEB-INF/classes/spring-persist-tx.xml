@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+  <!-- 配置自动扫描的包。把service 扫描到IOC容器中-->
+    <context:component-scan base-package="com.atguigu.crowd.service"></context:component-scan>
+
+    <!--配置事务管理-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+<!--        装配数据源-->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+<!--配置事务切面-->
+    <aop:config>
+        <aop:pointcut id="txPointcut" expression="execution(* *..*ServiceImpl.*(..))"/>
+    
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"></aop:advisor>
+    </aop:config>
+<!--    配置事务通知-->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+<!--            查询方法-->
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="find*" read-only="true"></tx:method>
+            <tx:method name="query*" read-only="true"></tx:method>
+            <tx:method name="count*" read-only="true"></tx:method>
+<!--            增删查改：配置事务传播行为，回滚异常-->
+<!--         propagation: 属性：
+                  REQUIRED：必须工作在事务里面，如果当前线程上没有事务开启，则自己开启新的事务
+                  REQUIRES_NEW不管当前线程有没有事务都会自己开启一个新的事务-->
+            <tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"></tx:method>
+            <tx:method name="insert*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"></tx:method>
+            <tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"></tx:method>
+            <tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"></tx:method>
+        </tx:attributes>
+    </tx:advice>
+
+
+</beans>
